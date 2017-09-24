@@ -17,11 +17,13 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
-		fmt.Println("\nReceived an interrupt, stopping services...")
+		//fmt.Println("\nReceived an interrupt, stopping services...")
 		done <- struct{}{}
 	}()
 
 	ch := mxdisk.WatchMounts(done)
+
+	go mxdisk.WatchUdev()
 
 	for {
 		select {
