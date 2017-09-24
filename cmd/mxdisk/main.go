@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"github.com/maxxant/mxdisk"
+	"os"
+	"os/signal"
 )
 
 func main() {
@@ -11,15 +12,16 @@ func main() {
 		fmt.Printf("blk: %+v\n", mp)
 	}
 
-	timer := make(chan struct{})
+	done := make(chan struct{})
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
 	go func() {
-		for {
-			time.Sleep(time.Second * 10)
-			timer <- struct{}{}
-		}
+		<-c
+		fmt.Println("\nReceived an interrupt, stopping services...")
+		done <- struct{}{}
 	}()
 
-	ch := mxdisk.WatchMounts(timer)
+	ch := mxdisk.WatchMounts(done)
 
 	for {
 		select {
