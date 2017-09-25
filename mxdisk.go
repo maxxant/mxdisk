@@ -7,41 +7,55 @@ import (
 )
 
 // WatchMounts return chan with removable storage info
-func WatchMounts(done chan struct{}) chan MntMapDisks {
-	rch := make(chan MntMapDisks)
-	fstab := mapMntFile("/etc/fstab")
+// onlyUUID for mounted devs with UUID only for filtering /dev/loop, etc
+func WatchMounts(done chan struct{}, config *Config, onlyUUID bool) chan MntMapDisks {
+	mapDiskByX := newDisksByX()
+
+	fstab := mapMntFile("/etc/fstab", mapDiskByX)
 	fmt.Println("fstab:")
 	fmt.Println(fstab)
-	mounts := mapMntFile("/proc/mounts")
+
+	mounts := mapMntFile("/proc/mounts", mapDiskByX)
+	fmt.Println("mounts:")
+	fmt.Println(mounts)
+
 	mblk := fetchSysBlock("/sys/block")
 	fmt.Println("sysblock:")
 	fmt.Println(mblk)
-	disks := getMntRemovableDisks(fstab, mounts)
+
+	fstabandslaves := mblk.exposeDevsSlaves(fstab.devPaths())
+	fstabEx := mounts.devs4paths(fstabandslaves)
+	fmt.Println("fstabEx:")
+	fmt.Println(fstabEx)
+
+	disks := getMntRemovableDisks(fstabEx, mounts, config)
 	//fmt.Println(disks)
 
 	fmt.Println("fstab-mounts mnt:")
+
 	timer := make(chan bool)
 	go func() {
 		for {
-			time.Sleep(time.Second * 15)
+			time.Sleep(time.Second * time.Duration(config.MonitoringFstabSec))
 			timer <- true
 		}
 	}()
 
+	rch := make(chan MntMapDisks)
 	go func() {
 		rch <- disks
 		for {
 			select {
-			case <-time.After(time.Second * 1):
-				mounts = mapMntFile("/proc/mounts")
-				d := getMntRemovableDisks(fstab, mounts)
+			case <-time.After(time.Second * time.Duration(config.MonitoringProcmountSec)):
+				mounts = mapMntFile("/proc/mounts", mapDiskByX)
+				d := getMntRemovableDisks(fstab, mounts, config)
 				if !reflect.DeepEqual(disks, d) {
 					disks = d
 					rch <- disks
 				}
 
 			case <-timer:
-				fstab = mapMntFile("/etc/fstab")
+				fstab = mapMntFile("/etc/fstab", mapDiskByX)
 
 			case <-done:
 				close(rch)

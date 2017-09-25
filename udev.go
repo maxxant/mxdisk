@@ -2,7 +2,7 @@ package mxdisk
 
 import (
 	"fmt"
-	"github.com/maxxant/udev"
+	"github.com/maxxant/udev" // vendor fork from: github.com/deniswernert/udev
 	"strings"
 )
 

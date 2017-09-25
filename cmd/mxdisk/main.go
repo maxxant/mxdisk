@@ -17,7 +17,7 @@ func main() {
 		done <- struct{}{}
 	}()
 
-	ch := mxdisk.WatchMounts(done)
+	ch := mxdisk.WatchMounts(done, mxdisk.NewConfig(), true)
 
 	go mxdisk.WatchUdev()
 
