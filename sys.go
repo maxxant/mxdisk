@@ -17,6 +17,40 @@ type sysBlockInfo struct {
 	slaves    []string
 }
 
+// SysMapBlocks the map of /sys/block devices
+type SysMapBlocks map[string]sysBlockInfo
+
+func (p SysMapBlocks) String() string {
+	var s string
+	for _, v := range p {
+		s += fmt.Sprintf("%+v\n", v)
+	}
+	return s
+}
+
+func (p SysMapBlocks) exposeDevsSlaves(devs []string) []string {
+	mp := make(map[string]bool)
+	for _, v := range devs {
+		mp[v] = true
+		if m, ok := p[v]; ok {
+			for _, s := range m.slaves {
+				mp[s] = true
+			}
+		}
+	}
+
+	var res []string
+	for k := range mp {
+		res = append(res, k)
+	}
+
+	// recursion for detect sub-sub slaves
+	if len(res) > len(devs) {
+		return p.exposeDevsSlaves(res)
+	}
+	return res
+}
+
 func readIntFromFile(f string) (val int64, err error) {
 	var data []byte
 	if data, err = ioutil.ReadFile(f); err != nil {
@@ -48,8 +82,8 @@ func readSysBlockSlaveInPath(path string) []string {
 	return res
 }
 
-func fetchSysBlock(path string) map[string]sysBlockInfo {
-	mp := make(map[string]sysBlockInfo)
+func fetchSysBlock(path string) SysMapBlocks {
+	mp := make(SysMapBlocks)
 	filepath.Walk(path, func(path string, inf os.FileInfo, err error) error {
 		if err != nil {
 			return err // if path is not exists
@@ -76,6 +110,5 @@ func fetchSysBlock(path string) map[string]sysBlockInfo {
 		}
 		return err
 	})
-	fmt.Println(mp)
 	return mp
 }

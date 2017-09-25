@@ -8,10 +8,6 @@ import (
 )
 
 func main() {
-	printMntRemovableDisks := func(mp map[string]mxdisk.DiskInfo) {
-		fmt.Printf("blk: %+v\n", mp)
-	}
-
 	done := make(chan struct{})
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -31,7 +27,7 @@ func main() {
 			if !ok {
 				return
 			}
-			printMntRemovableDisks(d)
+			fmt.Println(d)
 		}
 	}
 }

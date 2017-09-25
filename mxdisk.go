@@ -1,18 +1,25 @@
 package mxdisk
 
 import (
+	"fmt"
 	"reflect"
 	"time"
 )
 
 // WatchMounts return chan with removable storage info
-func WatchMounts(done chan struct{}) chan map[string]DiskInfo {
-	rch := make(chan map[string]DiskInfo)
+func WatchMounts(done chan struct{}) chan MntMapDisks {
+	rch := make(chan MntMapDisks)
 	fstab := mapMntFile("/etc/fstab")
+	fmt.Println("fstab:")
+	fmt.Println(fstab)
 	mounts := mapMntFile("/proc/mounts")
-	fetchSysBlock("/sys/block")
+	mblk := fetchSysBlock("/sys/block")
+	fmt.Println("sysblock:")
+	fmt.Println(mblk)
 	disks := getMntRemovableDisks(fstab, mounts)
+	//fmt.Println(disks)
 
+	fmt.Println("fstab-mounts mnt:")
 	timer := make(chan bool)
 	go func() {
 		for {

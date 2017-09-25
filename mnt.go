@@ -1,10 +1,31 @@
 package mxdisk
 
 import (
+	"fmt"
 	"github.com/maxxant/go-fstab"
 	"os"
 	"path/filepath"
 )
+
+// MntDiskInfo contains details mnt point, uuid, labels and others
+type MntDiskInfo struct {
+	DevPath  string
+	MntPoint string
+	UUID     string
+	Label    string
+	FsType   string
+}
+
+// MntMapDisks the map of mounted disks
+type MntMapDisks map[string]MntDiskInfo
+
+func (p MntMapDisks) String() string {
+	var s string
+	for _, v := range p {
+		s += fmt.Sprintf("%+v\n", v)
+	}
+	return s
+}
 
 // path:
 //  /dev/disk/by-uuid
@@ -29,19 +50,10 @@ func disksByPathX(path string) map[string]string {
 	return mp
 }
 
-// DiskInfo contains details mnt point, uuid, labels and others
-type DiskInfo struct {
-	DevPath  string
-	MntPoint string
-	UUID     string
-	Label    string
-	FsType   string
-}
-
-func mapMntFile(path string) map[string]DiskInfo {
+func mapMntFile(path string) MntMapDisks {
 	mpUUID := disksByPathX("/dev/disk/by-uuid")
 	mpLabel := disksByPathX("/dev/disk/by-label")
-	mp := make(map[string]DiskInfo)
+	mp := make(MntMapDisks)
 
 	find4map := func(m map[string]string, needval string) string {
 		for k, v := range m {
@@ -61,7 +73,7 @@ func mapMntFile(path string) map[string]DiskInfo {
 					fstype = mnt.VfsType
 				}
 
-				mp[val] = DiskInfo{
+				mp[val] = MntDiskInfo{
 					DevPath:  val,
 					MntPoint: mnt.File,
 					UUID:     find4map(mpUUID, val),
@@ -89,11 +101,11 @@ func mapMntFile(path string) map[string]DiskInfo {
 	return mp
 }
 
-func getMntRemovableDisks(fstab map[string]DiskInfo, mounts map[string]DiskInfo) map[string]DiskInfo {
-	res := make(map[string]DiskInfo)
+func getMntRemovableDisks(fstab MntMapDisks, mounts MntMapDisks) MntMapDisks {
+	res := make(MntMapDisks)
 	//fmt.Printf("mnts: %+v\n", mounts)
 
-	findUUID := func(mp map[string]DiskInfo, uuid string) bool {
+	findUUID := func(mp MntMapDisks, uuid string) bool {
 		for _, v := range mp {
 			if v.UUID == uuid {
 				return true
