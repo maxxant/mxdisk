@@ -19,6 +19,9 @@ import (
 func disksByPathX(path string) map[string]string {
 	mp := make(map[string]string)
 	filepath.Walk(path, func(path string, inf os.FileInfo, err error) error {
+		if err != nil {
+			return err // if path is not exists
+		}
 		if inf.IsDir() {
 			return nil
 		}
@@ -119,6 +122,7 @@ func WatchMounts(done chan struct{}) chan map[string]DiskInfo {
 	rch := make(chan map[string]DiskInfo)
 	fstab := mapMntFile("/etc/fstab")
 	mounts := mapMntFile("/proc/mounts")
+	fetchSysBlock("/sys/block")
 	disks := getMntRemovableDisks(fstab, mounts)
 
 	timer := make(chan bool)
@@ -166,11 +170,13 @@ func WatchUdev() {
 	for {
 		event := <-events
 
-		if devt, ok := event.Env["DEVTYPE"]; ok && devt == "partition" {
-			//fmt.Println(event.String())
-			name := strings.Split(event.Devpath, "/")
-			name = name[len(name)-1:]
-			fmt.Println(event.Action, name, devt)
+		if devt, ok := event.Env["DEVTYPE"]; ok {
+			if devt == "disk" || devt == "partition" {
+				//fmt.Println(event.String())
+				name := strings.Split(event.Devpath, "/")
+				name = name[len(name)-1:]
+				fmt.Println(event.Action, name, devt)
+			}
 		}
 	}
 }
