@@ -10,6 +10,8 @@ import (
 // onlyUUID for mounted devs with UUID only for filtering /dev/loop, etc
 func WatchMounts(done chan struct{}, config *Config, onlyUUID bool) chan MntMapDisks {
 	mapDiskByX := newDisksByX()
+	fmt.Println("diskBy:")
+	fmt.Println(mapDiskByX)
 
 	fstab := mapMntFile("/etc/fstab", mapDiskByX)
 	fmt.Println("fstab:")

@@ -3,7 +3,6 @@ package mxdisk
 import (
 	"fmt"
 	"github.com/maxxant/go-fstab" // vendor fork from: github.com/deniswernert/go-fstab
-	"os"
 	"path/filepath"
 )
 
@@ -52,55 +51,8 @@ func (p MntMapDisks) devs4paths(paths []string) MntMapDisks {
 	return mp
 }
 
-// path:
-//  /dev/disk/by-uuid
-//  /dev/disk/by-label
-//  /dev/disk/by-path
-// returns map [by-xxx] /dev/sdxN
-// NOTE: not all OS supports path "by-label"
-func disksByPathX(path string) map[string]string {
-	mp := make(map[string]string)
-	filepath.Walk(path, func(path string, inf os.FileInfo, err error) error {
-		if err != nil {
-			return err // if path is not exists
-		}
-		if inf.IsDir() {
-			return nil
-		}
-		if (inf.Mode() & os.ModeSymlink) != 0 {
-			base := filepath.Base(path)
-			mp[base], _ = filepath.EvalSymlinks(path)
-		}
-		return err
-	})
-	return mp
-}
-
-type disksByX struct {
-	uuid  map[string]string
-	label map[string]string
-	//path map[string]string
-}
-
-func newDisksByX() *disksByX {
-	return &disksByX{
-		uuid:  disksByPathX("/dev/disk/by-uuid"),
-		label: disksByPathX("/dev/disk/by-label"),
-		//path : disksByPathX("/dev/disk/by-path"),
-	}
-}
-
 func mapMntFile(path string, mapby *disksByX) MntMapDisks {
 	mp := make(MntMapDisks)
-
-	find4map := func(m map[string]string, needval string) string {
-		for k, v := range m {
-			if v == needval {
-				return k
-			}
-		}
-		return ""
-	}
 
 	if mnts, err := fstab.ParseFile(path); err == nil {
 		for _, mnt := range mnts {
@@ -114,8 +66,8 @@ func mapMntFile(path string, mapby *disksByX) MntMapDisks {
 				mp[val] = MntDiskInfo{
 					DevPath:  val,
 					MntPoint: mnt.File,
-					UUID:     find4map(mapby.uuid, val),
-					Label:    find4map(mapby.label, val),
+					UUID:     mapby.find(byUUID, val),
+					Label:    mapby.find(byLabel, val),
 					FsType:   fstype,
 				}
 			}
