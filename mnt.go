@@ -2,8 +2,9 @@ package mxdisk
 
 import (
 	"fmt"
-	"github.com/maxxant/go-fstab" // vendor fork from: github.com/deniswernert/go-fstab
 	"path/filepath"
+
+	"github.com/maxxant/go-fstab" // vendor fork from: github.com/deniswernert/go-fstab
 )
 
 // MntDiskInfo contains details mnt point, uuid, labels and others
@@ -66,18 +67,18 @@ func mapMntFile(path string, mapby *disksByX) MntMapDisks {
 				mp[val] = MntDiskInfo{
 					DevPath:  val,
 					MntPoint: mnt.File,
-					UUID:     mapby.find(byUUID, val),
-					Label:    mapby.find(byLabel, val),
+					UUID:     mapby.findX(byUUID, val),
+					Label:    mapby.findX(byLabel, val),
 					FsType:   fstype,
 				}
 			}
 
 			if mnt.SpecType() == fstab.Label || mnt.SpecType() == fstab.PartLabel {
-				if val, ok := mapby.label[mnt.SpecValue()]; ok {
+				if val := mapby.findDevPath(byLabel, mnt.SpecValue()); val != "" {
 					fillDiskInfo(val)
 				}
 			} else if mnt.SpecType() == fstab.UUID || mnt.SpecType() == fstab.PartUUID {
-				if val, ok := mapby.uuid[mnt.SpecValue()]; ok {
+				if val := mapby.findDevPath(byUUID, mnt.SpecValue()); val != "" {
 					fillDiskInfo(val)
 				}
 			} else if mnt.SpecType() == fstab.Path {

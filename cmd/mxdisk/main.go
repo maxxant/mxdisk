@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/maxxant/mxdisk"
 	"os"
 	"os/signal"
+
+	"github.com/maxxant/mxdisk"
 )
 
 func main() {
 	done := make(chan struct{})
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt) // Ctrl+C
 	go func() {
 		<-c
 		//fmt.Println("\nReceived an interrupt, stopping services...")

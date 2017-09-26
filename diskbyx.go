@@ -23,8 +23,10 @@ type disksByX struct {
 // - /dev/disk/by-uuid
 // - /dev/disk/by-label
 // - /dev/disk/by-path
+// TODO - /dev/disk/by-partuuid
+// TODO - /dev/disk/by-partlabel
 // returns map [by-xxx] /dev/sdxN
-// NOTE: not all OS supports path "by-label"
+// NOTE: not all OS supports path "by-label", "by-partlabel", "by-partuuid"
 func newDisksByX() *disksByX {
 	fill4path := func(path string) map[string]string {
 		mp := make(map[string]string)
@@ -64,10 +66,20 @@ func (p disksByX) getMap(byXFilter int) map[string]string {
 	panic("undefined filter index")
 }
 
-func (p disksByX) find(byXFilter int, need string) string {
+func (p disksByX) findX(byXFilter int, dev string) string {
 	mp := p.getMap(byXFilter)
-	if v, ok := mp[need]; ok {
+	if v, ok := mp[dev]; ok {
 		return v
+	}
+	return ""
+}
+
+func (p disksByX) findDevPath(byXFilter int, needx string) string {
+	mp := p.getMap(byXFilter)
+	for k, v := range mp {
+		if v == needx {
+			return k
+		}
 	}
 	return ""
 }

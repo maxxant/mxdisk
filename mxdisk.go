@@ -49,8 +49,9 @@ func WatchMounts(done chan struct{}, config *Config, onlyUUID bool) chan MntMapD
 		for {
 			select {
 			case <-time.After(time.Second * time.Duration(config.MonitoringProcmountSec)):
+				mapDiskByX = newDisksByX()
 				mounts = mapMntFile("/proc/mounts", mapDiskByX)
-				d := getMntRemovableDisks(fstab, mounts, config)
+				d := getMntRemovableDisks(fstabEx, mounts, config)
 				if !reflect.DeepEqual(disks, d) {
 					disks = d
 					rch <- disks
@@ -58,6 +59,9 @@ func WatchMounts(done chan struct{}, config *Config, onlyUUID bool) chan MntMapD
 
 			case <-timer:
 				fstab = mapMntFile("/etc/fstab", mapDiskByX)
+				mblk = fetchSysBlock("/sys/block")
+				fstabandslaves = mblk.exposeDevsSlaves(fstab.devPaths())
+				fstabEx = mounts.devs4paths(fstabandslaves)
 
 			case <-done:
 				close(rch)
