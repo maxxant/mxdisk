@@ -2,9 +2,21 @@ package mxdisk
 
 import (
 	"fmt"
-	"github.com/maxxant/udev" // vendor fork from: github.com/deniswernert/udev
 	"strings"
+
+	"github.com/maxxant/udev" // vendor fork from: github.com/deniswernert/udev
 )
+
+func udevProcessEvent(event *udev.UEvent) {
+	if devt, ok := event.Env["DEVTYPE"]; ok {
+		if devt == "disk" || devt == "partition" {
+			//fmt.Println(event.String())
+			name := strings.Split(event.Devpath, "/")
+			name = name[len(name)-1:]
+			fmt.Println(event.Action, name, devt)
+		}
+	}
+}
 
 func WatchUdev() {
 	monitor, err := udev.NewMonitor()

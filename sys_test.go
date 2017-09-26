@@ -20,7 +20,7 @@ func TestSysMapBlocks_exposeDevsSlaves(t *testing.T) {
 		{
 			name: "sda no slaves",
 			p: SysMapBlocks{
-				"/dev/sda": {devPath: "/dev/sda"},
+				"/dev/sda": {DevPath: "/dev/sda"},
 			},
 			args: args{
 				devs: []string{"/dev/sda"},
@@ -33,7 +33,7 @@ func TestSysMapBlocks_exposeDevsSlaves(t *testing.T) {
 			name: "md0 have sda1 & sdb1 slaves",
 			p: SysMapBlocks{
 				"/dev/md0": {
-					devPath: "/dev/md0",
+					DevPath: "/dev/md0",
 					slaves: []string{
 						"/dev/sda1",
 						"/dev/sdb1",
@@ -53,14 +53,14 @@ func TestSysMapBlocks_exposeDevsSlaves(t *testing.T) {
 			name: "recursion dm-1 have md0 slave and md0 have sda1 & sdb1 slaves",
 			p: SysMapBlocks{
 				"/dev/md0": {
-					devPath: "/dev/md0",
+					DevPath: "/dev/md0",
 					slaves: []string{
 						"/dev/sda1",
 						"/dev/sdb1",
 					},
 				},
 				"/dev/dm-1": {
-					devPath: "/dev/dm-1",
+					DevPath: "/dev/dm-1",
 					slaves:  []string{"/dev/md0"},
 				},
 			},

@@ -8,17 +8,18 @@ import (
 	"strconv"
 )
 
-type sysBlockInfo struct {
-	devPath   string
-	sysPath   string
-	ro        int64
-	removable int64
-	size      int64
+// SysBlockInfo the info from /sys/block
+type SysBlockInfo struct {
+	DevPath   string
+	SysPath   string
+	Ro        int64
+	Removable int64
+	Size      int64
 	slaves    []string
 }
 
 // SysMapBlocks the map of /sys/block devices
-type SysMapBlocks map[string]sysBlockInfo
+type SysMapBlocks map[string]SysBlockInfo
 
 func (p SysMapBlocks) String() string {
 	var s string
@@ -99,12 +100,12 @@ func fetchSysBlock(path string) SysMapBlocks {
 			size, _ := readIntFromFile(syspath + "/size")
 			slaves := readSysBlockSlaveInPath(syspath + "/slaves/") // for detect mdadm slaves
 
-			mp[base] = sysBlockInfo{
-				devPath:   base,
-				sysPath:   syspath,
-				ro:        ro,
-				removable: removable,
-				size:      size,
+			mp[base] = SysBlockInfo{
+				DevPath:   base,
+				SysPath:   syspath,
+				Ro:        ro,
+				Removable: removable,
+				Size:      size,
 				slaves:    slaves,
 			}
 		}

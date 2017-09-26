@@ -18,9 +18,7 @@ func main() {
 		done <- struct{}{}
 	}()
 
-	ch := mxdisk.WatchMounts(done, mxdisk.NewConfig(), true)
-
-	go mxdisk.WatchUdev()
+	ch := mxdisk.Watch(done, mxdisk.NewConfig(), true)
 
 	for {
 		select {
@@ -28,7 +26,7 @@ func main() {
 			if !ok {
 				return
 			}
-			fmt.Println(d)
+			fmt.Print(d)
 		}
 	}
 }
