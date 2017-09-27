@@ -9,81 +9,9 @@ import (
 	"github.com/maxxant/udev" // vendor fork from: github.com/deniswernert/udev
 )
 
-// Disk is info for disk and partition state
-type Disk struct {
-	*MntDiskInfo
-	*SysBlockInfo
-}
-
-// DisksArr map of disks
-type DisksArr map[string]Disk
-
-func newDisksArr() DisksArr {
-	return make(DisksArr)
-}
-
-func (p DisksArr) String() string {
-	var s string
-	for k, v := range p {
-		s += fmt.Sprintf("%+v : %+v\n", k, v)
-	}
-	return s
-}
-
-// Slice func convert map to slice
-func (p DisksArr) Slice() []Disk {
-	da := make([]Disk, 0, len(p))
-	for _, v := range p {
-		da = append(da, v)
-	}
-	return da
-}
-
-func (p DisksArr) mergeMntMap(mnt MntMapDisks) {
-	if p == nil {
-		return
-	}
-
-	for k, v := range mnt {
-		p[k].MntDiskInfo = &v
-	}
-}
-
-func (p DisksArr) mergeSysMap(sys SysMapBlocks) {
-	if p == nil {
-		return
-	}
-
-	for k, v := range sys {
-		p[k] = Disk{SysBlockInfo: &v}
-	}
-}
-
-func (p DisksArr) minusFstab(fstab MntMapDisks, config *Config) {
-	//res := make(MntMapDisks)
-	findUUID := func(mp MntMapDisks, uuid string) bool {
-		for _, v := range mp {
-			if v.UUID == uuid {
-				return true
-			}
-		}
-		return false
-	}
-
-	// check "/proc/mounts" records that not contains in "/etc/fstab" (by dev & UUID) and fstab's RAID slaves)
-	// and optional have non empty UUID as block device (for example /dev/loop is not have UUIDs and will be filtered out)
-	for k, v := range p {
-		if _, ok := fstab[k]; (!config.OnlyUUIDMountedDisks || v.UUID != "") && !ok && !findUUID(fstab, v.UUID) {
-			//res[k] = v
-		} else {
-			delete(p, k)
-		}
-	}
-}
-
 // Watch return chan with removable storage info
 // onlyUUID for mounted devs with UUID only for filtering /dev/loop, etc
-func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
+func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryMap {
 	mapDiskByX := newDisksByX()
 	fmt.Println("diskBy:")
 	fmt.Println(mapDiskByX)
@@ -106,7 +34,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 	fmt.Println(fstabEx)
 
 	//mdisks := getMntRemovableDisks(fstabEx, mounts, config)
-	resMap := newDisksArr()
+	resMap := newDisksSummaryMap()
 	resMap.mergeMntMap(mounts)
 	resMap.mergeSysMap(mblk)
 	resMap.minusFstab(fstabEx, config)
@@ -132,13 +60,13 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 
 	fmt.Println("nofstab disks:")
 
-	rch := make(chan DisksArr)
+	rch := make(chan DisksSummaryMap)
 	go func() {
 		rch <- resMap
 		for {
 
 			// make a copy for compare later
-			oldMap := make(DisksArr, len(resMap))
+			oldMap := make(DisksSummaryMap, len(resMap))
 			for k, v := range resMap {
 				oldMap[k] = v
 			}
