@@ -8,7 +8,7 @@ const (
 	ConstMonitoringFstabSec = 20
 
 	// ConstOnlyUUIDMountedDisks defaults config for filtering /dev/loop & etc vfs
-	ConstOnlyUUIDMountedDisks = true
+	ConstOnlyUUIDMountedDisks = false
 )
 
 // Config struct for operations

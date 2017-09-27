@@ -11,35 +11,74 @@ import (
 
 // Disk is info for disk and partition state
 type Disk struct {
-	MntDiskInfo
-	SysBlockInfo
+	*MntDiskInfo
+	*SysBlockInfo
 }
 
-// DisksArr slice of disks
-type DisksArr []Disk
+// DisksArr map of disks
+type DisksArr map[string]Disk
 
-func (p DisksArr) String() {
-	for v := range p {
-		fmt.Println(v)
-	}
+func newDisksArr() DisksArr {
+	return make(DisksArr)
 }
 
-func mergeDisksMap2Slise(mnt MntMapDisks, sys SysMapBlocks) DisksArr {
-	dset := make(map[string]Disk)
-
-	for k, v := range mnt {
-		dset[k] = Disk{MntDiskInfo: v}
+func (p DisksArr) String() string {
+	var s string
+	for k, v := range p {
+		s += fmt.Sprintf("%+v : %+v\n", k, v)
 	}
+	return s
+}
 
-	for k, v := range sys {
-		dset[k] = Disk{SysBlockInfo: v}
-	}
-
-	da := make(DisksArr, 0, len(dset))
-	for _, v := range dset {
+// Slice func convert map to slice
+func (p DisksArr) Slice() []Disk {
+	da := make([]Disk, 0, len(p))
+	for _, v := range p {
 		da = append(da, v)
 	}
 	return da
+}
+
+func (p DisksArr) mergeMntMap(mnt MntMapDisks) {
+	if p == nil {
+		return
+	}
+
+	for k, v := range mnt {
+		p[k].MntDiskInfo = &v
+	}
+}
+
+func (p DisksArr) mergeSysMap(sys SysMapBlocks) {
+	if p == nil {
+		return
+	}
+
+	for k, v := range sys {
+		p[k] = Disk{SysBlockInfo: &v}
+	}
+}
+
+func (p DisksArr) minusFstab(fstab MntMapDisks, config *Config) {
+	//res := make(MntMapDisks)
+	findUUID := func(mp MntMapDisks, uuid string) bool {
+		for _, v := range mp {
+			if v.UUID == uuid {
+				return true
+			}
+		}
+		return false
+	}
+
+	// check "/proc/mounts" records that not contains in "/etc/fstab" (by dev & UUID) and fstab's RAID slaves)
+	// and optional have non empty UUID as block device (for example /dev/loop is not have UUIDs and will be filtered out)
+	for k, v := range p {
+		if _, ok := fstab[k]; (!config.OnlyUUIDMountedDisks || v.UUID != "") && !ok && !findUUID(fstab, v.UUID) {
+			//res[k] = v
+		} else {
+			delete(p, k)
+		}
+	}
 }
 
 // Watch return chan with removable storage info
@@ -57,7 +96,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 	fmt.Println("mounts:")
 	fmt.Println(mounts)
 
-	mblk := fetchSysBlock("/sys/block")
+	mblk := fetchSysBlock("/sys/class/block")
 	fmt.Println("sysblock:")
 	fmt.Println(mblk)
 
@@ -66,7 +105,12 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 	fmt.Println("fstabEx:")
 	fmt.Println(fstabEx)
 
-	mdisks := getMntRemovableDisks(fstabEx, mounts, config)
+	//mdisks := getMntRemovableDisks(fstabEx, mounts, config)
+	resMap := newDisksArr()
+	resMap.mergeMntMap(mounts)
+	resMap.mergeSysMap(mblk)
+	resMap.minusFstab(fstabEx, config)
+
 	//fmt.Println(disks)
 
 	events := make(chan *udev.UEvent)
@@ -86,24 +130,31 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 		}
 	}()
 
-	fmt.Println("fstab-mounts mnt:")
+	fmt.Println("nofstab disks:")
 
 	rch := make(chan DisksArr)
 	go func() {
-		disks := mergeDisksMap2Slise(mdisks, mblk)
-		rch <- disks
+		rch <- resMap
 		for {
+
+			// make a copy for compare later
+			oldMap := make(DisksArr, len(resMap))
+			for k, v := range resMap {
+				oldMap[k] = v
+			}
+
 			select {
+			// mnt monitoring
 			case <-time.After(time.Second * time.Duration(config.MonitoringProcmountSec)):
 				mapDiskByX = newDisksByX()
 				mounts = mapMntFile("/proc/mounts", mapDiskByX)
-				d := getMntRemovableDisks(fstabEx, mounts, config)
-				if !reflect.DeepEqual(mdisks, d) {
-					mdisks = d
-					disks = mergeDisksMap2Slise(mdisks, mblk)
-					rch <- disks
+				resMap.mergeMntMap(mounts)
+				resMap.minusFstab(fstabEx, config)
+				if !reflect.DeepEqual(resMap, oldMap) {
+					rch <- resMap
 				}
 
+			// udev monitoring
 			case event, ok := <-events:
 				if ok {
 					if devt, ok := event.Env["DEVTYPE"]; ok {
@@ -114,23 +165,25 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksArr {
 							fmt.Println(event.Action, name, devt)
 
 							mblk = fetchSysBlock("/sys/block")
-							disks = mergeDisksMap2Slise(mdisks, mblk)
-							rch <- disks
+							resMap.mergeSysMap(mblk)
+							resMap.minusFstab(fstabEx, config)
+							rch <- resMap
 						}
 					}
-				} else {
-					// TODO rm
-					panic("ev")
 				}
 
+			// fstab monitoring (optional disabled)
 			case <-timer:
-				mblk = fetchSysBlock("/sys/block")
-				disks = mergeDisksMap2Slise(mdisks, mblk)
-				//rch <- disks
 				// for next scan mnt tick
 				fstab = mapMntFile("/etc/fstab", mapDiskByX)
 				fstabandslaves = mblk.exposeDevsSlaves(fstab.devPaths())
 				fstabEx = mounts.devs4paths(fstabandslaves)
+				//resMap.minusFstab(fstabEx, config)
+				//rch <- resMap
+
+				// reload /sys/block without udev events and take effect in mnt monitoring tick
+				mblk = fetchSysBlock("/sys/block")
+				resMap.mergeSysMap(mblk)
 
 			case <-done:
 				close(rch)
