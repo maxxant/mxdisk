@@ -92,10 +92,12 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 							name = name[len(name)-1:]
 							fmt.Println(event.Action, name, devt)
 
-							mblk = fetchSysBlock("/sys/block")
+							mblk = fetchSysBlock("/sys/class/block")
 							resMap.mergeSysMap(mblk)
 							resMap.minusFstab(fstabEx, config)
-							rch <- resMap
+							// if !reflect.DeepEqual(resMap, oldMap) {
+							// 	rch <- resMap
+							// }
 						}
 					}
 				}
