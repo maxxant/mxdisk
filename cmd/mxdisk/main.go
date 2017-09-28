@@ -26,6 +26,7 @@ func main() {
 			if !ok {
 				return
 			}
+			fmt.Println("event")
 			fmt.Print(d)
 		}
 	}

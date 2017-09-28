@@ -6,6 +6,7 @@ import "fmt"
 type DiskSummary struct {
 	MntDiskInfo
 	SysBlockInfo
+	//UdevInfo
 }
 
 // DisksSummaryMap map of disks

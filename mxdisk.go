@@ -95,9 +95,9 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 							mblk = fetchSysBlock("/sys/class/block")
 							resMap.mergeSysMap(mblk)
 							resMap.minusFstab(fstabEx, config)
-							// if !reflect.DeepEqual(resMap, oldMap) {
-							// 	rch <- resMap
-							// }
+							if !reflect.DeepEqual(resMap, oldMap) {
+								rch <- resMap
+							}
 						}
 					}
 				}

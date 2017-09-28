@@ -1,43 +1,8 @@
 package mxdisk
 
-import (
-	"fmt"
-	"strings"
-
-	"github.com/maxxant/udev" // vendor fork from: github.com/deniswernert/udev
-)
-
-func udevProcessEvent(event *udev.UEvent) {
-	if devt, ok := event.Env["DEVTYPE"]; ok {
-		if devt == "disk" || devt == "partition" {
-			//fmt.Println(event.String())
-			name := strings.Split(event.Devpath, "/")
-			name = name[len(name)-1:]
-			fmt.Println(event.Action, name, devt)
-		}
-	}
-}
-
-func WatchUdev() {
-	monitor, err := udev.NewMonitor()
-	if nil != err {
-		fmt.Println(err)
-		return
-	}
-
-	defer monitor.Close()
-	events := make(chan *udev.UEvent)
-	monitor.Monitor(events)
-	for {
-		event := <-events
-
-		if devt, ok := event.Env["DEVTYPE"]; ok {
-			if devt == "disk" || devt == "partition" {
-				//fmt.Println(event.String())
-				name := strings.Split(event.Devpath, "/")
-				name = name[len(name)-1:]
-				fmt.Println(event.Action, name, devt)
-			}
-		}
-	}
+// UdevInfo info from /dev/disk/by-xxx
+type UdevInfo struct {
+	UUID  string
+	Label string
+	Path  string
 }
