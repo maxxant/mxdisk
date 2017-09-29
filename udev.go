@@ -1,8 +1,118 @@
 package mxdisk
 
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
+const (
+	byUUID  = iota
+	byLabel = iota
+	byPath  = iota
+)
+
 // UdevInfo info from /dev/disk/by-xxx
 type UdevInfo struct {
 	UUID  string
 	Label string
 	Path  string
+}
+
+// UdevMapInfo key = dev as /dev/sda1
+type UdevMapInfo map[string]*UdevInfo
+
+// type UdevMapInfo struct {
+
+// 	uuid  map[string]string
+// 	label map[string]string
+// 	path  map[string]string
+// }
+
+// newDisksByX for paths:
+// - /dev/disk/by-uuid
+// - /dev/disk/by-label
+// - /dev/disk/by-path
+// TODO - /dev/disk/by-partuuid
+// TODO - /dev/disk/by-partlabel
+// returns map [by-xxx] /dev/sdxN
+// NOTE: not all OS supports path "by-label", "by-partlabel", "by-partuuid"
+func newDisksByX() *UdevMapInfo {
+	return &UdevMapInfo{
+		uuid:  fill4path("/dev/disk/by-uuid"),
+		label: fill4path("/dev/disk/by-label"),
+		path:  fill4path("/dev/disk/by-path"),
+	}
+}
+
+func (p UdevMapInfo) fill4path(path string, byX int) {
+	filepath.Walk(path, func(path string, inf os.FileInfo, err error) error {
+		if err != nil {
+			return err // if path is not exists
+		}
+		if inf.IsDir() {
+			return nil
+		}
+		if (inf.Mode() & os.ModeSymlink) != 0 {
+			link := filepath.Base(path)
+			name, _ := filepath.EvalSymlinks(path)
+			switch byX {
+			case byUUID:
+				p[name].UUID = link
+			case byLabel:
+				p[name].Label = link
+			case byPath:
+				p[name].Path = link
+			}
+		}
+		return err
+	})
+}
+
+// func (p UdevMapInfo) getMap(byXFilter int) map[string]string {
+// 	switch byXFilter {
+// 	case byUUID:
+// 		return p.uuid
+// 	case byLabel:
+// 		return p.label
+// 	case byPath:
+// 		return p.path
+// 	}
+// 	panic("undefined filter index")
+// }
+
+// func (p UdevMapInfo) findX(byXFilter int, dev string) string {
+// 	mp := p.getMap(byXFilter)
+// 	if v, ok := mp[dev]; ok {
+// 		return v
+// 	}
+// 	return ""
+// }
+
+func (p UdevMapInfo) findDevPath(byXFilter int, needx string) string {
+	for k, v := range p {
+		switch byXFilter {
+		case byUUID:
+			if v.UUID == needx {
+				return k
+			}
+		case byLabel:
+			if v.Label == needx {
+				return k
+			}
+		case byPath:
+			if v.Path == needx {
+				return k
+			}
+		}
+	}
+	return ""
+}
+
+func (p UdevMapInfo) String() string {
+	var s string
+	for k, v := range p {
+		s += fmt.Sprintf("uuid: %v : %v\n", k, v)
+	}
+	return s
 }
