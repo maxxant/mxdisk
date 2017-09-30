@@ -1,7 +1,9 @@
 package mxdisk
 
-import "fmt"
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // DiskSummary is info for disk and partition state
 type DiskSummary struct {

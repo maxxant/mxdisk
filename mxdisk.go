@@ -13,22 +13,22 @@ import (
 // onlyUUID for mounted devs with UUID only for filtering /dev/loop, etc
 func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryMap {
 	udevDisks := newUdevMapInfo()
-	fmt.Println("udevDisks:")
-	fmt.Println(udevDisks)
+	//fmt.Println("udevDisks:")
+	//fmt.Println(udevDisks)
 
 	mounts := mapMntFile("/proc/mounts", udevDisks)
-	fmt.Println("mounts:")
-	fmt.Println(mounts)
+	//fmt.Println("mounts:")
+	//fmt.Println(mounts)
 
 	mblk := fetchSysBlock("/sys/class/block")
-	fmt.Println("sysblock:")
-	fmt.Println(mblk)
+	//fmt.Println("sysblock:")
+	//fmt.Println(mblk)
 
 	fstab := mapMntFile("/etc/fstab", udevDisks)
 	fstabandslaves := mblk.exposeDevsSlaves(fstab.devPaths())
 	ft := newFstabMap(fstab, fstabandslaves)
-	fmt.Println("fstabEx:")
-	fmt.Println(ft)
+	//fmt.Println("fstabEx:")
+	//fmt.Println(ft)
 
 	resMap := newDisksSummaryMap()
 	resMap.rebuild(mblk)
@@ -53,7 +53,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 		}
 	}()
 
-	fmt.Println("disks:")
+	//fmt.Println("disks:")
 
 	rch := make(chan DisksSummaryMap)
 	go func() {
@@ -86,7 +86,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 							//fmt.Println(event.String())
 							name := strings.Split(event.Devpath, "/")
 							name = name[len(name)-1:]
-							fmt.Println(event.Action, name, devt)
+							//fmt.Println(event.Action, name, devt)
 
 							mblk = fetchSysBlock("/sys/class/block")
 							resMap.rebuild(mblk)

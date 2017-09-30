@@ -22,7 +22,7 @@ type UdevInfo struct {
 	Path      string
 	Partuuid  string
 	Partlabel string
-	PhyParent string // physiscal device for partition. calculated value
+	phyParent string // physiscal device for partition. calculated value
 }
 
 // UdevMapInfo key = dev as /dev/sda1
@@ -53,7 +53,7 @@ func (p UdevMapInfo) buildPhy() {
 		if t != "" {
 			for k, v := range p {
 				if v.Path != t && strings.Contains(v.Path, t) {
-					p[k].PhyParent = tk
+					p[k].phyParent = tk
 				}
 			}
 		}

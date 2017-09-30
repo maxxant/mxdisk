@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -26,8 +27,11 @@ func main() {
 			if !ok {
 				return
 			}
-			fmt.Println("event")
-			fmt.Print(d)
+			// fmt.Println("event")
+			// fmt.Print(d)
+			r := mxdisk.NewDiskMap(d)
+			b, _ := json.Marshal(r)
+			fmt.Print(string(b))
 		}
 	}
 }
