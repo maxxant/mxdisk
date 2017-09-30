@@ -22,13 +22,6 @@ type UdevInfo struct {
 // UdevMapInfo key = dev as /dev/sda1
 type UdevMapInfo map[string]*UdevInfo
 
-// type UdevMapInfo struct {
-
-// 	uuid  map[string]string
-// 	label map[string]string
-// 	path  map[string]string
-// }
-
 // newDisksByX for paths:
 // - /dev/disk/by-uuid
 // - /dev/disk/by-label
@@ -72,26 +65,6 @@ func (p UdevMapInfo) fill4path(path string, byX int) {
 		return err
 	})
 }
-
-// func (p UdevMapInfo) getMap(byXFilter int) map[string]string {
-// 	switch byXFilter {
-// 	case byUUID:
-// 		return p.uuid
-// 	case byLabel:
-// 		return p.label
-// 	case byPath:
-// 		return p.path
-// 	}
-// 	panic("undefined filter index")
-// }
-
-// func (p UdevMapInfo) findX(byXFilter int, dev string) string {
-// 	mp := p.getMap(byXFilter)
-// 	if v, ok := mp[dev]; ok {
-// 		return v
-// 	}
-// 	return ""
-// }
 
 func (p UdevMapInfo) findDevPath(byXFilter int, needx string) string {
 	for k, v := range p {

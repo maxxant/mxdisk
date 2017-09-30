@@ -33,7 +33,6 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 	fmt.Println("fstabEx:")
 	fmt.Println(fstabEx)
 
-	//mdisks := getMntRemovableDisks(fstabEx, mounts, config)
 	resMap := newDisksSummaryMap()
 	resMap.mergeSysMap(mblk)
 	resMap.mergeMntMap(mounts)
@@ -111,12 +110,6 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 				fstab = mapMntFile("/etc/fstab", udevDisks)
 				fstabandslaves = mblk.exposeDevsSlaves(fstab.devPaths())
 				fstabEx = mounts.devs4paths(fstabandslaves)
-				//resMap.minusFstab(fstabEx, config)
-				//rch <- resMap
-
-				// reload /sys/block without udev events and take effect in mnt monitoring tick
-				// mblk = fetchSysBlock("/sys/block")
-				// resMap.mergeSysMap(mblk)
 
 			case <-done:
 				close(rch)
