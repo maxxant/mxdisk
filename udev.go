@@ -37,12 +37,12 @@ type UdevMapInfo map[string]*UdevInfo
 // TODO - /dev/disk/by-partlabel
 // returns map [by-xxx] /dev/sdxN
 // NOTE: not all OS supports path "by-label", "by-partlabel", "by-partuuid"
-func newDisksByX() *UdevMapInfo {
-	return &UdevMapInfo{
-		uuid:  fill4path("/dev/disk/by-uuid"),
-		label: fill4path("/dev/disk/by-label"),
-		path:  fill4path("/dev/disk/by-path"),
-	}
+func newUdevMapInfo() UdevMapInfo {
+	m := make(UdevMapInfo)
+	m.fill4path("/dev/disk/by-uuid", byUUID)
+	m.fill4path("/dev/disk/by-label", byLabel)
+	m.fill4path("/dev/disk/by-path", byPath)
+	return m
 }
 
 func (p UdevMapInfo) fill4path(path string, byX int) {
@@ -56,6 +56,10 @@ func (p UdevMapInfo) fill4path(path string, byX int) {
 		if (inf.Mode() & os.ModeSymlink) != 0 {
 			link := filepath.Base(path)
 			name, _ := filepath.EvalSymlinks(path)
+
+			if _, ok := p[name]; !ok {
+				p[name] = &UdevInfo{}
+			}
 			switch byX {
 			case byUUID:
 				p[name].UUID = link
@@ -112,7 +116,7 @@ func (p UdevMapInfo) findDevPath(byXFilter int, needx string) string {
 func (p UdevMapInfo) String() string {
 	var s string
 	for k, v := range p {
-		s += fmt.Sprintf("uuid: %v : %v\n", k, v)
+		s += fmt.Sprintf("%v : %+v\n", k, v)
 	}
 	return s
 }

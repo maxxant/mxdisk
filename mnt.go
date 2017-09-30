@@ -11,9 +11,7 @@ import (
 type MntDiskInfo struct {
 	DevPath  string
 	MntPoint string
-	//	UUID     string
-	//	Label    string
-	FsType string
+	FsType   string
 }
 
 // MntMapDisks the map of mounted disks
@@ -52,7 +50,7 @@ func (p MntMapDisks) devs4paths(paths []string) MntMapDisks {
 	return mp
 }
 
-func mapMntFile(path string, mapby *UdevMapInfo) MntMapDisks {
+func mapMntFile(path string, mapby UdevMapInfo) MntMapDisks {
 	mp := make(MntMapDisks)
 
 	if mnts, err := fstab.ParseFile(path); err == nil {
@@ -91,25 +89,3 @@ func mapMntFile(path string, mapby *UdevMapInfo) MntMapDisks {
 
 	return mp
 }
-
-// func getMntRemovableDisks(fstab MntMapDisks, mounts MntMapDisks, config *Config) MntMapDisks {
-// 	res := make(MntMapDisks)
-// 	findUUID := func(mp MntMapDisks, uuid string) bool {
-// 		for _, v := range mp {
-// 			if v.UUID == uuid {
-// 				return true
-// 			}
-// 		}
-// 		return false
-// 	}
-
-// 	// check "/proc/mounts" records that not contains in "/etc/fstab" (by dev & UUID) and fstab's RAID slaves)
-// 	// and optional have non empty UUID as block device (for example /dev/loop is not have UUIDs and will be filtered out)
-// 	for k, v := range mounts {
-// 		if _, ok := fstab[v.DevPath]; (!config.OnlyUUIDMountedDisks || v.UUID != "") && !ok && !findUUID(fstab, v.UUID) {
-// 			res[k] = v
-// 		}
-// 	}
-
-// 	return res
-// }
