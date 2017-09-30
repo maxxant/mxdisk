@@ -30,6 +30,8 @@ func main() {
 			// fmt.Println("event")
 			// fmt.Print(d)
 			r := mxdisk.NewDiskMap(d)
+			r.FilterFstab()
+			r.FilterVirtual()
 			b, _ := json.Marshal(r)
 			fmt.Print(string(b) + "\n")
 		}

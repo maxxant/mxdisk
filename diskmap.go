@@ -97,3 +97,21 @@ func (p DiskMap) SliceKeys() []string {
 	}
 	return da
 }
+
+// FilterFstab reject fstab devs
+func (p DiskMap) FilterFstab() {
+	for k, v := range p {
+		if v.FstabMention {
+			delete(p, k)
+		}
+	}
+}
+
+// FilterVirtual reject virtual devs
+func (p DiskMap) FilterVirtual() {
+	for k, v := range p {
+		if v.Virtual {
+			delete(p, k)
+		}
+	}
+}
