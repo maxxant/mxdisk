@@ -18,8 +18,8 @@ type MntMapDisks map[string]MntDiskInfo
 
 func (p MntMapDisks) String() string {
 	var s string
-	for _, v := range p {
-		s += fmt.Sprintf("%+v\n", v)
+	for k, v := range p {
+		s += fmt.Sprintf("%v : %+v\n", k, v)
 	}
 	return s
 }

@@ -20,8 +20,8 @@ type SysMapBlocks map[string]SysBlockInfo
 
 func (p SysMapBlocks) String() string {
 	var s string
-	for _, v := range p {
-		s += fmt.Sprintf("%+v\n", v)
+	for k, v := range p {
+		s += fmt.Sprintf("%v : %+v\n", k, v)
 	}
 	return s
 }
