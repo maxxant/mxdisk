@@ -9,7 +9,6 @@ import (
 
 // MntDiskInfo contains details mnt point, uuid, labels and others
 type MntDiskInfo struct {
-	DevPath  string
 	MntPoint string
 	FsType   string
 }
@@ -42,9 +41,7 @@ func (p MntMapDisks) devs4paths(paths []string) MntMapDisks {
 			// spec case: record dev name only for deep slaves disks,
 			// because any others info it is not available.
 			// (example : dm-1 with slave RAID md1 and sda1 & sdb1 slaves)
-			mp[v] = MntDiskInfo{
-				DevPath: v,
-			}
+			mp[v] = MntDiskInfo{}
 		}
 	}
 	return mp
@@ -63,11 +60,8 @@ func mapMntFile(path string, mapby UdevMapInfo) MntMapDisks {
 				}
 
 				mp[val] = MntDiskInfo{
-					DevPath:  val,
 					MntPoint: mnt.File,
-					//UUID:     mapby.findX(byUUID, val),
-					//Label:    mapby.findX(byLabel, val),
-					FsType: fstype,
+					FsType:   fstype,
 				}
 			}
 

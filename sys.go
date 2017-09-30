@@ -10,8 +10,6 @@ import (
 
 // SysBlockInfo the info from /sys/block
 type SysBlockInfo struct {
-	//DevPath   string
-	SysPath   string
 	Ro        int64
 	Removable int64
 	slaves    []string
@@ -99,8 +97,6 @@ func fetchSysBlock(path string) SysMapBlocks {
 			slaves := readSysBlockSlaveInPath(syspath + "/slaves/") // for detect mdadm slaves
 
 			mp[base] = SysBlockInfo{
-				//DevPath:   base,
-				SysPath:   syspath,
 				Ro:        ro,
 				Removable: removable,
 				slaves:    slaves,
