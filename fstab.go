@@ -6,8 +6,9 @@ import (
 
 // Fstab info that disk fstab presents
 type Fstab struct {
-	Clearly  bool
-	Indirect bool
+	FstabMention bool
+	clearly      bool
+	indirect     bool
 }
 
 // FstabMap devkey:info map
@@ -16,12 +17,18 @@ type FstabMap map[string]Fstab
 func newFstabMap(mnt MntMapDisks, allpaths []string) FstabMap {
 	mp := make(FstabMap)
 	for k := range mnt {
-		mp[k] = Fstab{Clearly: true}
+		mp[k] = Fstab{
+			FstabMention: true,
+			clearly:      true,
+		}
 	}
 
 	for _, v := range allpaths {
 		if _, ok := mp[v]; !ok {
-			mp[v] = Fstab{Indirect: true}
+			mp[v] = Fstab{
+				FstabMention: true,
+				indirect:     true,
+			}
 		}
 	}
 	return mp

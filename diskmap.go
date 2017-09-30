@@ -9,11 +9,12 @@ import (
 type Partition struct {
 	MntDiskInfo
 	UdevInfo
-	Fstab
 }
 
 // Disk with partitions map
 type Disk struct {
+	Fstab
+	Virtual bool
 	SysBlockInfo
 	Part map[string]Partition
 }
@@ -32,13 +33,23 @@ func NewDiskMap(sum DisksSummaryMap) DiskMap {
 				Part:         map[string]Partition{},
 			}
 
-			// case for disk and partition in one (iso fs devices)
-			if v.UUID != "" {
+			if v.FstabMention {
+				d.FstabMention = true
+			}
+
+			// case for disk and partition in one as ISO-fs devices v.UUID != ""
+			// and for virtual partitions as /dev/loop
+			if v.UUID != "" || len(v.MntPoints) > 0 {
 				d.Part[k] = Partition{
 					MntDiskInfo: v.MntDiskInfo,
 					UdevInfo:    v.UdevInfo,
-					Fstab:       v.Fstab,
 				}
+				if v.FstabMention {
+					d.FstabMention = true
+				}
+			}
+			if v.Path == "" {
+				d.Virtual = true
 			}
 			mp[k] = d
 		}
@@ -54,10 +65,13 @@ func NewDiskMap(sum DisksSummaryMap) DiskMap {
 					v.Part[sk] = Partition{
 						MntDiskInfo: sv.MntDiskInfo,
 						UdevInfo:    sv.UdevInfo,
-						Fstab:       sv.Fstab,
+					}
+					if sv.FstabMention {
+						v.FstabMention = true
 					}
 				}
 			}
+			mp[k] = v
 		}
 	}
 

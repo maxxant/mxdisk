@@ -31,7 +31,7 @@ func main() {
 			// fmt.Print(d)
 			r := mxdisk.NewDiskMap(d)
 			b, _ := json.Marshal(r)
-			fmt.Print(string(b))
+			fmt.Print(string(b) + "\n")
 		}
 	}
 }
