@@ -7,16 +7,20 @@ import (
 )
 
 const (
-	byUUID  = iota
-	byLabel = iota
-	byPath  = iota
+	byUUID      = iota
+	byLabel     = iota
+	byPath      = iota
+	byPartuuid  = iota
+	byPartlabel = iota
 )
 
 // UdevInfo info from /dev/disk/by-xxx
 type UdevInfo struct {
-	UUID  string
-	Label string
-	Path  string
+	UUID      string
+	Label     string
+	Path      string
+	Partuuid  string
+	Partlabel string
 }
 
 // UdevMapInfo key = dev as /dev/sda1
@@ -26,8 +30,8 @@ type UdevMapInfo map[string]*UdevInfo
 // - /dev/disk/by-uuid
 // - /dev/disk/by-label
 // - /dev/disk/by-path
-// TODO - /dev/disk/by-partuuid
-// TODO - /dev/disk/by-partlabel
+// - /dev/disk/by-partuuid
+// - /dev/disk/by-partlabel
 // returns map [by-xxx] /dev/sdxN
 // NOTE: not all OS supports path "by-label", "by-partlabel", "by-partuuid"
 func newUdevMapInfo() UdevMapInfo {
@@ -35,6 +39,8 @@ func newUdevMapInfo() UdevMapInfo {
 	m.fill4path("/dev/disk/by-uuid", byUUID)
 	m.fill4path("/dev/disk/by-label", byLabel)
 	m.fill4path("/dev/disk/by-path", byPath)
+	m.fill4path("/dev/disk/by-partuuid", byPartuuid)
+	m.fill4path("/dev/disk/by-partlabel", byPartlabel)
 	return m
 }
 
@@ -60,6 +66,10 @@ func (p UdevMapInfo) fill4path(path string, byX int) {
 				p[name].Label = link
 			case byPath:
 				p[name].Path = link
+			case byPartuuid:
+				p[name].Partuuid = link
+			case byPartlabel:
+				p[name].Partlabel = link
 			}
 		}
 		return err
@@ -79,6 +89,14 @@ func (p UdevMapInfo) findDevPath(byXFilter int, needx string) string {
 			}
 		case byPath:
 			if v.Path == needx {
+				return k
+			}
+		case byPartuuid:
+			if v.Partuuid == needx {
+				return k
+			}
+		case byPartlabel:
+			if v.Partlabel == needx {
 				return k
 			}
 		}
