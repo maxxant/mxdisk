@@ -1,0 +1,258 @@
+{
+    "/dev/dm-0": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-0": {
+                "MntPoints": {
+                    "/": {},
+                    "/var/docker/nginx/ssl": {}
+                },
+                "FsType": "ext4",
+                "UUID": "8a9c91ab-8dd5-4c78-b16a-49b0e42f3885",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/dm-1": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-1": {
+                "MntPoints": {
+                    "/usr": {}
+                },
+                "FsType": "ext4",
+                "UUID": "98a455af-b7fc-446e-bdcb-986fb1ce7c41",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/dm-2": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-2": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "0c34ca88-06ae-4468-a62c-b2133d2ff4e6",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/dm-3": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-3": {
+                "MntPoints": {
+                    "/var": {},
+                    "/var/lib/docker/aufs": {}
+                },
+                "FsType": "ext4",
+                "UUID": "75c7b23e-ae04-44eb-a800-c0da65991a2e",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/dm-4": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-4": {
+                "MntPoints": {
+                    "/home": {}
+                },
+                "FsType": "ext4",
+                "UUID": "c53f8787-e330-4d5e-b505-fcf0f2d8ca78",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/dm-5": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/dm-5": {
+                "MntPoints": {
+                    "/srv": {}
+                },
+                "FsType": "ext4",
+                "UUID": "ad8a90e5-9831-425a-9edf-a275b88289fb",
+                "Label": "",
+                "Path": "",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/loop0": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop1": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop2": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop3": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop4": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop5": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop6": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/loop7": {
+        "FstabMention": false,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/md0": {
+        "FstabMention": true,
+        "Virtual": true,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {}
+    },
+    "/dev/sda": {
+        "FstabMention": true,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/sda1": {
+                "MntPoints": {
+                    "/boot": {}
+                },
+                "FsType": "ext3",
+                "UUID": "2b8ff235-6fa9-43ae-9d79-c54e7c6b7145",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-1-part1",
+                "Partuuid": "",
+                "Partlabel": ""
+            },
+            "/dev/sda2": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-1-part2",
+                "Partuuid": "",
+                "Partlabel": ""
+            },
+            "/dev/sda5": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-1-part5",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/sdb": {
+        "FstabMention": true,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 0,
+        "Part": {
+            "/dev/sdb1": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "89c57fda-fd17-44ae-8952-ee21172a40f1",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-2-part1",
+                "Partuuid": "",
+                "Partlabel": ""
+            },
+            "/dev/sdb2": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-2-part2",
+                "Partuuid": "",
+                "Partlabel": ""
+            },
+            "/dev/sdb5": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "",
+                "Label": "",
+                "Path": "pci-0000:00:1f.2-ata-2-part5",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/sr0": {
+        "FstabMention": false,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 1,
+        "Part": {}
+    }
+}

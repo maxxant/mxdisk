@@ -1,0 +1,9 @@
+{
+    "/dev/sr0": {
+        "FstabMention": false,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 1,
+        "Part": {}
+    }
+}

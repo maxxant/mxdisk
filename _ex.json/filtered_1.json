@@ -1,0 +1,26 @@
+{
+    "/dev/sde": {
+        "FstabMention": false,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 1,
+        "Part": {
+            "/dev/sde1": {
+                "MntPoints": null,
+                "FsType": "",
+                "UUID": "4207-52FD",
+                "Label": "KINGSTON",
+                "Path": "pci-0000:00:1d.7-usb-0:6.3:1.0-scsi-0:0:0:0-part1",
+                "Partuuid": "",
+                "Partlabel": ""
+            }
+        }
+    },
+    "/dev/sr0": {
+        "FstabMention": false,
+        "Virtual": false,
+        "Ro": 0,
+        "Removable": 1,
+        "Part": {}
+    }
+}
