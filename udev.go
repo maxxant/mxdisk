@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -21,6 +22,7 @@ type UdevInfo struct {
 	Path      string
 	Partuuid  string
 	Partlabel string
+	PhyParent string // physiscal device for partition. calculated value
 }
 
 // UdevMapInfo key = dev as /dev/sda1
@@ -41,7 +43,25 @@ func newUdevMapInfo() UdevMapInfo {
 	m.fill4path("/dev/disk/by-path", byPath)
 	m.fill4path("/dev/disk/by-partuuid", byPartuuid)
 	m.fill4path("/dev/disk/by-partlabel", byPartlabel)
+	m.buildPhy()
 	return m
+}
+
+func (p UdevMapInfo) buildPhy() {
+	markPhyParentForPathContains := func(tk string) {
+		t := p[tk].Path
+		if t != "" {
+			for k, v := range p {
+				if v.Path != t && strings.Contains(v.Path, t) {
+					p[k].PhyParent = tk
+				}
+			}
+		}
+	}
+
+	for k := range p {
+		markPhyParentForPathContains(k)
+	}
 }
 
 func (p UdevMapInfo) fill4path(path string, byX int) {
