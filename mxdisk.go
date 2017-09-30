@@ -31,7 +31,8 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 	fmt.Println(ft)
 
 	resMap := newDisksSummaryMap()
-	resMap.rebuild(mblk, ft)
+	resMap.rebuild(mblk)
+	resMap.mergeFstabMap(ft)
 	resMap.mergeMntMap(mounts)
 	resMap.mergeUdevMap(udevDisks)
 
@@ -70,9 +71,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 			case <-time.After(time.Second * time.Duration(config.MonitoringProcmountSec)):
 				udevDisks = newUdevMapInfo()
 				// rescan ft
-				resMap.rebuild(mblk, ft)
 				resMap.mergeUdevMap(udevDisks)
-
 				mounts = mapMntFile("/proc/mounts", udevDisks)
 				resMap.mergeMntMap(mounts)
 				if !reflect.DeepEqual(resMap, oldMap) {
@@ -90,7 +89,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 							fmt.Println(event.Action, name, devt)
 
 							mblk = fetchSysBlock("/sys/class/block")
-							resMap.rebuild(mblk, ft)
+							resMap.rebuild(mblk)
 							if !reflect.DeepEqual(resMap, oldMap) {
 								rch <- resMap
 							}
@@ -104,7 +103,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 				fstab = mapMntFile("/etc/fstab", udevDisks)
 				fstabandslaves = mblk.exposeDevsSlaves(fstab.devPaths())
 				ft = newFstabMap(fstab, fstabandslaves)
-				resMap.rebuild(mblk, ft)
+				resMap.mergeFstabMap(ft)
 
 			case <-done:
 				close(rch)

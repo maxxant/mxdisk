@@ -47,7 +47,7 @@ func (p DisksSummaryMap) SliceValues() []DiskSummary {
 	return da
 }
 
-func (p DisksSummaryMap) rebuild(sys SysMapBlocks, mnt FstabMap) {
+func (p DisksSummaryMap) rebuild(sys SysMapBlocks) {
 	// add /sys
 	for k, v := range sys {
 		if x, ok := p[k]; ok {
@@ -58,23 +58,22 @@ func (p DisksSummaryMap) rebuild(sys SysMapBlocks, mnt FstabMap) {
 		}
 	}
 
-	// add fstab
-	for k, v := range mnt {
-		if x, ok := p[k]; ok {
-			x.Fstab = v
-			p[k] = x
-		} else {
-			// disk not present in /sys but present in fstab, maybe not physical partition
-			p[k] = DiskSummary{Fstab: v}
-		}
-	}
-
-	// delete if the disk not present in /sys and fstab
+	// delete if the disk not present in /sys
 	for k := range p {
 		if _, ok := sys[k]; !ok {
-			if _, ok := mnt[k]; !ok {
-				delete(p, k)
-			}
+			delete(p, k)
+		}
+	}
+}
+
+func (p DisksSummaryMap) mergeFstabMap(fstab FstabMap) {
+	for k, v := range p {
+		if x, ok := fstab[k]; ok {
+			v.Fstab = x
+			p[k] = v
+		} else {
+			v.Fstab = Fstab{}
+			p[k] = v
 		}
 	}
 }
