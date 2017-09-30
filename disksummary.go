@@ -8,6 +8,7 @@ type DiskSummary struct {
 	MntDiskInfo
 	SysBlockInfo
 	UdevInfo
+	Fstab
 }
 
 // DisksSummaryMap map of disks
@@ -46,8 +47,8 @@ func (p DisksSummaryMap) SliceValues() []DiskSummary {
 	return da
 }
 
-func (p DisksSummaryMap) mergeSysMap(sys SysMapBlocks) {
-	// add
+func (p DisksSummaryMap) rebuild(sys SysMapBlocks, mnt FstabMap) {
+	// add /sys
 	for k, v := range sys {
 		if x, ok := p[k]; ok {
 			x.SysBlockInfo = v
@@ -57,58 +58,47 @@ func (p DisksSummaryMap) mergeSysMap(sys SysMapBlocks) {
 		}
 	}
 
-	// delete if the disk not present in /sys
+	// add fstab
+	for k, v := range mnt {
+		if x, ok := p[k]; ok {
+			x.Fstab = v
+			p[k] = x
+		} else {
+			// disk not present in /sys but present in fstab, maybe not physical partition
+			p[k] = DiskSummary{Fstab: v}
+		}
+	}
+
+	// delete if the disk not present in /sys and fstab
 	for k := range p {
 		if _, ok := sys[k]; !ok {
-			delete(p, k)
+			if _, ok := mnt[k]; !ok {
+				delete(p, k)
+			}
 		}
 	}
 }
 
 func (p DisksSummaryMap) mergeUdevMap(udev UdevMapInfo) {
-	for k, v := range udev {
-		if x, ok := p[k]; ok {
-			x.UdevInfo = *v
-			p[k] = x
+	for k, v := range p {
+		if x, ok := udev[k]; ok {
+			v.UdevInfo = *x
+			p[k] = v
 		} else {
-			//p[k] = DiskSummary{UdevInfo: *v}
-			// disk not present in /sys
-			panic("disk not present in /sys")
+			v.UdevInfo = UdevInfo{}
+			p[k] = v
 		}
 	}
 }
 
 func (p DisksSummaryMap) mergeMntMap(mnt MntMapDisks) {
-	for k, v := range mnt {
-		if x, ok := p[k]; ok {
-			x.MntDiskInfo = v
-			p[k] = x
+	for k, v := range p {
+		if x, ok := mnt[k]; ok {
+			v.MntDiskInfo = x
+			p[k] = v
 		} else {
-			//p[k] = DiskSummary{MntDiskInfo: v}
-			// disk not present in /sys
-			panic("disk not present in /sys")
+			v.MntDiskInfo = MntDiskInfo{}
+			p[k] = v
 		}
 	}
 }
-
-// func (p DisksSummaryMap) minusFstab(fstab MntMapDisks, config *Config) {
-// 	//res := make(MntMapDisks)
-// 	findUUID := func(mp MntMapDisks, uuid string) bool {
-// 		for _, v := range mp {
-// 			if v.UUID == uuid {
-// 				return true
-// 			}
-// 		}
-// 		return false
-// 	}
-
-// 	// check "/proc/mounts" records that not contains in "/etc/fstab" (by dev & UUID) and fstab's RAID slaves)
-// 	// and optional have non empty UUID as block device (for example /dev/loop is not have UUIDs and will be filtered out)
-// 	for k, v := range p {
-// 		if _, ok := fstab[k]; (!config.OnlyUUIDMountedDisks || v.UUID != "") && !ok && !findUUID(fstab, v.UUID) {
-// 			//res[k] = v
-// 		} else {
-// 			delete(p, k)
-// 		}
-// 	}
-// }

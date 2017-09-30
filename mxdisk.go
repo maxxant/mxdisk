@@ -16,10 +16,6 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 	fmt.Println("udevDisks:")
 	fmt.Println(udevDisks)
 
-	fstab := mapMntFile("/etc/fstab", udevDisks)
-	fmt.Println("fstab:")
-	fmt.Println(fstab)
-
 	mounts := mapMntFile("/proc/mounts", udevDisks)
 	fmt.Println("mounts:")
 	fmt.Println(mounts)
@@ -28,18 +24,16 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 	fmt.Println("sysblock:")
 	fmt.Println(mblk)
 
+	fstab := mapMntFile("/etc/fstab", udevDisks)
 	fstabandslaves := mblk.exposeDevsSlaves(fstab.devPaths())
-	fstabEx := mounts.devs4paths(fstabandslaves)
+	ft := newFstabMap(fstab, fstabandslaves)
 	fmt.Println("fstabEx:")
-	fmt.Println(fstabEx)
+	fmt.Println(ft)
 
 	resMap := newDisksSummaryMap()
-	resMap.mergeSysMap(mblk)
+	resMap.rebuild(mblk, ft)
 	resMap.mergeMntMap(mounts)
 	resMap.mergeUdevMap(udevDisks)
-	//resMap.minusFstab(fstabEx, config)
-
-	//fmt.Println(disks)
 
 	events := make(chan *udev.UEvent)
 	monitor, err := udev.NewMonitor()
@@ -58,7 +52,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 		}
 	}()
 
-	fmt.Println("nofstab disks:")
+	fmt.Println("disks:")
 
 	rch := make(chan DisksSummaryMap)
 	go func() {
@@ -75,11 +69,12 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 			// mnt monitoring
 			case <-time.After(time.Second * time.Duration(config.MonitoringProcmountSec)):
 				udevDisks = newUdevMapInfo()
+				// rescan ft
+				resMap.rebuild(mblk, ft)
 				resMap.mergeUdevMap(udevDisks)
 
 				mounts = mapMntFile("/proc/mounts", udevDisks)
 				resMap.mergeMntMap(mounts)
-				//resMap.minusFstab(fstabEx, config)
 				if !reflect.DeepEqual(resMap, oldMap) {
 					rch <- resMap
 				}
@@ -95,8 +90,7 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 							fmt.Println(event.Action, name, devt)
 
 							mblk = fetchSysBlock("/sys/class/block")
-							resMap.mergeSysMap(mblk)
-							//resMap.minusFstab(fstabEx, config)
+							resMap.rebuild(mblk, ft)
 							if !reflect.DeepEqual(resMap, oldMap) {
 								rch <- resMap
 							}
@@ -109,7 +103,8 @@ func Watch(done chan struct{}, config *Config, onlyUUID bool) chan DisksSummaryM
 				// for next scan mnt tick
 				fstab = mapMntFile("/etc/fstab", udevDisks)
 				fstabandslaves = mblk.exposeDevsSlaves(fstab.devPaths())
-				fstabEx = mounts.devs4paths(fstabandslaves)
+				ft = newFstabMap(fstab, fstabandslaves)
+				resMap.rebuild(mblk, ft)
 
 			case <-done:
 				close(rch)

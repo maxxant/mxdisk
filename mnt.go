@@ -32,21 +32,6 @@ func (p MntMapDisks) devPaths() []string {
 	return s
 }
 
-func (p MntMapDisks) devs4paths(paths []string) MntMapDisks {
-	mp := make(MntMapDisks)
-	for _, v := range paths {
-		if _, ok := p[v]; ok {
-			mp[v] = p[v]
-		} else {
-			// spec case: record dev name only for deep slaves disks,
-			// because any others info it is not available.
-			// (example : dm-1 with slave RAID md1 and sda1 & sdb1 slaves)
-			mp[v] = MntDiskInfo{}
-		}
-	}
-	return mp
-}
-
 func mapMntFile(path string, mapby UdevMapInfo) MntMapDisks {
 	mp := make(MntMapDisks)
 
