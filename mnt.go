@@ -9,8 +9,8 @@ import (
 
 // MntDiskInfo contains details mnt point, uuid, labels and others
 type MntDiskInfo struct {
-	MntPoint string
-	FsType   string
+	MntPoints map[string]struct{}
+	FsType    string
 }
 
 // MntMapDisks the map of mounted disks
@@ -44,9 +44,15 @@ func mapMntFile(path string, mapby UdevMapInfo) MntMapDisks {
 					fstype = mnt.VfsType
 				}
 
-				mp[val] = MntDiskInfo{
-					MntPoint: mnt.File,
-					FsType:   fstype,
+				if v, ok := mp[val]; !ok {
+					mp[val] = MntDiskInfo{
+						MntPoints: map[string]struct{}{mnt.File: {}},
+						FsType:    fstype,
+					}
+				} else {
+					if _, ok := v.MntPoints[mnt.File]; !ok {
+						v.MntPoints[mnt.File] = struct{}{}
+					}
 				}
 			}
 
