@@ -3,6 +3,7 @@ package mxdisk
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 // Partition info
@@ -16,7 +17,11 @@ type Disk struct {
 	Fstab
 	Virtual bool
 	SysBlockInfo
-	Part map[string]Partition
+	IDType   string //example:  ID_TYPE=disk || cd || ..
+	IDBus    string //example:  ID_BUS=usb || ata || ..
+	IDVendor string //example: ID_VENDOR=Kingston
+	IDSerial string //example: ID_SERIAL_SHORT=50E549C695ADB110394DA95E	or  ID_SERIAL=Kingston_DataTraveler_3.0_5xxxxxx
+	Part     map[string]Partition
 }
 
 // DiskMap disks tree
@@ -112,6 +117,36 @@ func (p DiskMap) FilterVirtual() {
 	for k, v := range p {
 		if v.Virtual {
 			delete(p, k)
+		}
+	}
+}
+
+// FillDevIDs from udevadm
+func (p DiskMap) FillDevIDs() {
+	for k, v := range p {
+		sk := strings.TrimLeft(k, "/dev/")
+		u := NewUdevadmInfo("/sys/class/block/" + sk)
+		v.IDType = u.ekv["ID_TYPE"]
+		v.IDBus = u.ekv["ID_BUS"]
+		v.IDVendor = u.ekv["ID_VENDOR"]
+		v.IDSerial = u.ekv["ID_SERIAL_SHORT"]
+		if v.IDSerial == "" {
+			v.IDSerial = u.ekv["ID_SERIAL"]
+		}
+		p[k] = v
+	}
+}
+
+// FillFsTypeIfEmpty from udevadm
+func (p DiskMap) FillFsTypeIfEmpty() {
+	for k, v := range p {
+		for kp, vp := range v.Part {
+			if vp.FsType == "" {
+				sk := strings.TrimLeft(kp, "/dev/")
+				u := NewUdevadmInfo("/sys/class/block/" + sk)
+				vp.FsType = u.ekv["ID_FS_TYPE"]
+				p[k].Part[kp] = vp
+			}
 		}
 	}
 }

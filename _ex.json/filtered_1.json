@@ -1,13 +1,17 @@
 {
-    "/dev/sde": {
+    "/dev/sdw": {
         "FstabMention": false,
         "Virtual": false,
         "Ro": 0,
         "Removable": 1,
+        "IDType": "disk",
+        "IDBus": "usb",
+        "IDVendor": "Kingston",
+        "IDSerial": "50E549C695ADB110394DA95E",
         "Part": {
-            "/dev/sde1": {
+            "/dev/sdw1": {
                 "MntPoints": null,
-                "FsType": "",
+                "FsType": "vfat",
                 "UUID": "4207-52FD",
                 "Label": "KINGSTON",
                 "Path": "pci-0000:00:1d.7-usb-0:6.3:1.0-scsi-0:0:0:0-part1",
@@ -21,6 +25,10 @@
         "Virtual": false,
         "Ro": 0,
         "Removable": 1,
+        "IDType": "cd",
+        "IDBus": "ata",
+        "IDVendor": "",
+        "IDSerial": "2E8139903389",
         "Part": {}
     }
 }

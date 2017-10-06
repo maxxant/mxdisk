@@ -80,6 +80,7 @@ func readSysBlockSlaveInPath(path string) []string {
 	return res
 }
 
+// info from std  /sys/class/block path
 func fetchSysBlock(path string) SysMapBlocks {
 	mp := make(SysMapBlocks)
 	filepath.Walk(path, func(path string, inf os.FileInfo, err error) error {

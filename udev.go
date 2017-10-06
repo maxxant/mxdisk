@@ -3,9 +3,50 @@ package mxdisk
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+// UdevadmInfo for mapping from
+// /sbin/udevadm info -p /sys/class/block/devXX
+type UdevadmInfo struct {
+	// E: key=val map
+	ekv map[string]string
+}
+
+// NewUdevadmInfo new from param sysblk as: /sys/class/block/devXX
+func NewUdevadmInfo(sysblk string) UdevadmInfo {
+	cmd := exec.Command("/sbin/udevadm", "info", "-p", sysblk)
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println("udevadm failed:", err)
+		return UdevadmInfo{}
+	}
+	//fmt.Printf("out %s\n", out)
+
+	res := UdevadmInfo{
+		ekv: map[string]string{},
+	}
+	res.parseOutput(udevadmRegexpE(), string(out))
+	//fmt.Printf("out %s\n", res.ekv)
+	return res
+}
+
+func udevadmRegexpE() *regexp.Regexp {
+	return regexp.MustCompile("E: (\\w+)=(.+)")
+}
+
+func (p UdevadmInfo) parseOutput(rex *regexp.Regexp, str string) {
+	data := rex.FindAllStringSubmatch(str, -1)
+
+	for _, kv := range data {
+		k := kv[1]
+		v := kv[2]
+		p.ekv[k] = v
+	}
+}
 
 const (
 	byUUID      = iota

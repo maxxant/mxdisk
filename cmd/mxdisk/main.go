@@ -32,6 +32,8 @@ func main() {
 			r := mxdisk.NewDiskMap(d)
 			r.FilterFstab()
 			r.FilterVirtual()
+			r.FillFsTypeIfEmpty()
+			r.FillDevIDs()
 			b, _ := json.Marshal(r)
 			fmt.Print(string(b) + "\n")
 		}
