@@ -9,26 +9,50 @@ import (
 	"strings"
 )
 
-// UdevadmInfo for mapping from
-// /sbin/udevadm info -p /sys/class/block/devXX
+// UdevadmInfo for mapping from:
+// /sbin/udevadm info -q all -n /dev/sda1  (old and new Linux OS supports these format)
+// newer Linux OS must works with: /sbin/udevadm info -p /sys/class/block/devXX
 type UdevadmInfo struct {
 	// E: key=val map
 	ekv map[string]string
 }
 
-// NewUdevadmInfo new from param sysblk as: /sys/class/block/devXX
-func NewUdevadmInfo(sysblk string) UdevadmInfo {
-	cmd := exec.Command("/sbin/udevadm", "info", "-p", sysblk)
+var onceFindUdevadm string
+
+// NewUdevadmInfo new from param sysblk as: /dev/sdaXn
+func NewUdevadmInfo(fdevname string) UdevadmInfo {
+	if "" == onceFindUdevadm {
+		path, err := exec.LookPath("udevadm")
+		if err == nil {
+			onceFindUdevadm = path
+		} else {
+			return UdevadmInfo{
+				ekv: map[string]string{},
+			}
+		}
+	}
+
+	cmd := exec.Command(onceFindUdevadm, "info", "-q", "all", "-n", fdevname)
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println("udevadm failed:", err)
-		return UdevadmInfo{}
+		return UdevadmInfo{
+			ekv: map[string]string{},
+		}
 	}
 	//fmt.Printf("out %s\n", out)
 
 	res := UdevadmInfo{
 		ekv: map[string]string{},
 	}
+
+	defer func() {
+		// for recover in
+		if x := recover(); x != nil {
+			fmt.Println("panic in NewUdevadmInfo()", x)
+		}
+	}()
+
 	res.parseOutput(udevadmRegexpE(), string(out))
 	//fmt.Printf("out %s\n", res.ekv)
 	return res

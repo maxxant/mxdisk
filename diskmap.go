@@ -3,7 +3,6 @@ package mxdisk
 import (
 	"fmt"
 	"sort"
-	"strings"
 )
 
 // Partition info
@@ -124,8 +123,7 @@ func (p DiskMap) FilterVirtual() {
 // FillDevIDs from udevadm
 func (p DiskMap) FillDevIDs() {
 	for k, v := range p {
-		sk := strings.TrimLeft(k, "/dev/")
-		u := NewUdevadmInfo("/sys/class/block/" + sk)
+		u := NewUdevadmInfo(k)
 		v.IDType = u.ekv["ID_TYPE"]
 		v.IDBus = u.ekv["ID_BUS"]
 		v.IDVendor = u.ekv["ID_VENDOR"]
@@ -142,8 +140,7 @@ func (p DiskMap) FillFsTypeIfEmpty() {
 	for k, v := range p {
 		for kp, vp := range v.Part {
 			if vp.FsType == "" {
-				sk := strings.TrimLeft(kp, "/dev/")
-				u := NewUdevadmInfo("/sys/class/block/" + sk)
+				u := NewUdevadmInfo(kp)
 				vp.FsType = u.ekv["ID_FS_TYPE"]
 				p[k].Part[kp] = vp
 			}

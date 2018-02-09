@@ -1,11 +1,11 @@
 package mxdisk
 
 const (
-	// ConstMonitoringProcmountSec defaults config monitoring tick "/proc/mounts" in seconds
-	ConstMonitoringProcmountSec = 2
+	// ConstMonitoringProcmountMSec defaults config monitoring tick "/proc/mounts" in seconds
+	ConstMonitoringProcmountMSec = 2000
 
 	// ConstMonitoringFstabSec defaults config monitoring tick "/etc/fstab" in seconds
-	ConstMonitoringFstabSec = 20
+	ConstMonitoringFstabSec = 10
 
 	// ConstOnlyUUIDMountedDisks defaults config for filtering /dev/loop & etc vfs
 	ConstOnlyUUIDMountedDisks = false
@@ -13,9 +13,9 @@ const (
 
 // Config struct for operations
 type Config struct {
-	// MonitoringProcmountSec monitoring tick "/proc/mounts" in seconds, 1..N
-	// defaults value: ConstMonitoringProcmountSec
-	MonitoringProcmountSec int
+	// MonitoringProcmountSec monitoring tick "/proc/mounts" in milliseconds, 1..N
+	// defaults value: ConstMonitoringProcmountMSec
+	MonitoringProcmountMSec int
 
 	// MonitoringFstabSec monitoring tick "/etc/fstab" in seconds
 	// full reload fstab without inotify & etc for vfs independence
@@ -31,7 +31,7 @@ type Config struct {
 // NewConfig make default Config
 func NewConfig() *Config {
 	return &Config{
-		MonitoringProcmountSec: ConstMonitoringProcmountSec,
+		MonitoringProcmountMSec: ConstMonitoringProcmountMSec,
 		MonitoringFstabSec:     ConstMonitoringFstabSec,
 		OnlyUUIDMountedDisks:   ConstOnlyUUIDMountedDisks,
 	}

@@ -19,7 +19,7 @@ func main() {
 		done <- struct{}{}
 	}()
 
-	ch := mxdisk.Watch(done, mxdisk.NewConfig(), true)
+	ch := mxdisk.Watch(done, mxdisk.NewConfig(), true, nil)
 
 	for {
 		select {
