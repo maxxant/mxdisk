@@ -32,7 +32,7 @@ type Config struct {
 func NewConfig() *Config {
 	return &Config{
 		MonitoringProcmountMSec: ConstMonitoringProcmountMSec,
-		MonitoringFstabSec:     ConstMonitoringFstabSec,
-		OnlyUUIDMountedDisks:   ConstOnlyUUIDMountedDisks,
+		MonitoringFstabSec:      ConstMonitoringFstabSec,
+		OnlyUUIDMountedDisks:    ConstOnlyUUIDMountedDisks,
 	}
 }
