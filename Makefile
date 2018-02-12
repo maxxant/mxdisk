@@ -1,7 +1,7 @@
 GOCMD=go
-GOBUILD=$(GOCMD) build
+GOBUILD=$(GOCMD) build -race
 GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
+GOTEST=$(GOCMD) test -race
 GOFMT=$(GOCMD) fmt
 GOGET=$(GOCMD) get
 BINARY_NAME=mxdisk
