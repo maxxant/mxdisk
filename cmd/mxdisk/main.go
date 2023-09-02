@@ -2,16 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"time"
 
 	"github.com/maxxant/mxdisk"
 )
 
-//var getDataCh chan string
+// var getDataCh chan string
 var forceupCh chan struct{}
 var ch chan mxdisk.DisksSummaryMap
 var done chan struct{}
+var flagfull = flag.Bool("f", false, "full unfiltered output")
 
 func init() {
 	//getDataCh = make(chan string)
@@ -49,9 +51,11 @@ func GetLastJSONData() string {
 	case d, ok := <-ch:
 		if ok {
 			r := mxdisk.NewDiskMap(d)
-			r.FilterFstab()
-			r.FilterVirtual()
-			r.FillFsTypeIfEmpty()
+			if !*flagfull {
+				r.FilterFstab()
+				r.FilterVirtual()
+				r.FillFsTypeIfEmpty()
+			}
 			r.FillDevIDs()
 			ba, err := json.Marshal(r)
 			if err == nil {
@@ -89,6 +93,7 @@ func goHalStorageGetJSON() string {
 }
 
 func main() {
+	flag.Parse()
 	goHalStorageInit()
 
 	for {
